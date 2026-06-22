@@ -1,0 +1,6 @@
+{
+  "name": "Azure TCO Engine",
+  "description": "Interactive TCO & ROI Financial Engine for migrating to Azure KSA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
