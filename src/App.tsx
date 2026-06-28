@@ -1,4 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 import {
   Server,
   Calculator,
@@ -77,7 +88,7 @@ export default function App() {
   const [b14, setB14] = useUrlState('azureVmCost', 15000);
   const [b15, setB15] = useUrlState('azureStorageCost', 2200);
 
-  const [showConstants, setShowConstants] = useState(false);
+  const [showConstants, setShowConstants] = useState(true);
 
   // Dark mode toggle
   const [isDark, setIsDark] = useState(false);
@@ -92,6 +103,7 @@ export default function App() {
   }, [isDark]);
 
   // Calculations
+  const isUSD = currency === 'USD';
   const onPremHw = (b5 * b12) + (b6 * b13);
   const azureHw = (b5 * b14) + (b6 * b15);
   const hwSavings = onPremHw - azureHw;
@@ -117,19 +129,31 @@ export default function App() {
   const payback = Math.max(6, Math.min(24, Math.round(rawPayback)));
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 p-4 md:p-8 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-primary-950 text-slate-800 dark:text-slate-200 font-sans selection:bg-primary-100 dark:selection:bg-primary-900 p-4 md:p-8 transition-colors duration-300">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-7xl mx-auto space-y-8"
+      >
         
         {/* Header Section */}
         <header className="flex flex-col gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="flex flex-wrap justify-between items-center gap-4 w-full">
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-blue-700 dark:text-blue-400 uppercase bg-blue-100/80 dark:bg-blue-900/40 px-3 py-1 rounded-full">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 79.269 27.811" className="h-6 w-auto" overflow="visible">
+                  <path className="fill-[#1b3d6d] dark:fill-white" d="M 43.099 5.19 C 43.099 2.324 45.422 0 48.289 0 C 51.156 0 53.479 2.324 53.479 5.19 C 53.479 8.057 51.156 10.381 48.289 10.381 C 45.422 10.381 43.099 8.057 43.099 5.19 Z M 25.769 5.19 C 25.769 2.324 28.093 0 30.96 0 C 33.826 0 36.15 2.324 36.15 5.19 C 36.15 8.057 33.826 10.381 30.96 10.381 C 28.093 10.381 25.769 8.057 25.769 5.19 Z M 42.173 0 L 42.173 10.381 C 39.312 10.381 36.982 8.051 36.982 5.19 C 36.982 2.33 39.312 0 42.173 0 Z M 68.889 5.19 C 68.889 2.324 71.212 0 74.079 0 C 76.946 0 79.269 2.324 79.269 5.19 C 79.269 8.057 76.946 10.381 74.079 10.381 C 71.212 10.381 68.889 8.057 68.889 5.19 Z M 60.445 1.517 C 62.468 3.54 62.468 6.83 60.445 8.853 L 53.109 1.517 C 55.132 -0.506 58.422 -0.506 60.445 1.517 Z M 68.005 0.005 L 68.005 10.386 C 65.144 10.386 62.815 8.056 62.815 5.196 C 62.815 2.335 65.144 0.005 68.005 0.005 Z" />
+                  <path className="fill-primary-950 dark:fill-[#7b88d2]" d="M 6.416 14.713 C 10.626 14.713 12.628 17.492 12.628 21.374 C 12.628 21.558 12.588 21.926 12.588 22.11 L 3.086 22.11 C 3.086 24.296 4.7 25.502 7.152 25.502 C 8.726 25.502 10.033 25.073 11.096 24.521 L 12.199 26.381 C 11.545 26.81 9.645 27.811 6.866 27.811 C 2.105 27.811 0 24.95 0 21.333 C -0.02 17.635 2.187 14.713 6.416 14.713 Z M 3.086 20.128 L 9.666 20.128 C 9.522 18.084 8.235 16.879 6.416 16.879 C 4.557 16.879 3.249 18.125 3.086 20.128 Z M 17.717 18.227 C 17.717 20.496 23.867 19.474 23.867 23.888 C 23.867 26.585 21.599 27.729 18.943 27.729 C 17.287 27.729 15.285 27.402 14.161 26.769 L 14.897 24.726 C 16 25.155 17.349 25.522 18.616 25.522 C 20.005 25.522 20.986 25.012 20.986 23.99 C 20.986 21.579 14.815 22.743 14.815 18.289 C 14.815 15.694 16.94 14.713 19.494 14.713 C 20.986 14.713 22.355 15.04 23.663 15.673 L 22.968 17.676 C 22.008 17.247 20.782 16.899 19.76 16.899 C 18.595 16.92 17.717 17.308 17.717 18.227 Z M 32.184 14.713 C 36.394 14.713 38.396 17.492 38.396 21.374 C 38.396 21.558 38.355 21.926 38.355 22.11 L 28.874 22.11 C 28.874 24.296 30.488 25.502 32.94 25.502 C 34.514 25.502 35.821 25.073 36.884 24.521 L 37.987 26.381 C 37.333 26.81 35.433 27.811 32.654 27.811 C 27.893 27.811 25.788 24.95 25.788 21.333 C 25.768 17.635 27.954 14.713 32.184 14.713 Z M 28.874 20.128 L 35.454 20.128 C 35.31 18.084 34.023 16.879 32.204 16.879 C 30.325 16.879 29.017 18.125 28.874 20.128 Z M 43.954 27.443 L 40.93 27.443 L 40.93 15.081 L 43.954 15.081 L 43.954 16.797 C 44.506 15.632 45.936 14.713 48.041 14.713 C 51.106 14.713 52.863 16.695 52.863 20.516 L 52.863 27.423 L 49.839 27.423 L 49.839 20.7 C 49.839 18.289 48.92 17.124 46.978 17.124 C 45.078 17.124 43.954 18.289 43.954 20.7 Z M 58.585 18.227 C 58.585 20.496 64.736 19.474 64.736 23.888 C 64.736 26.585 62.468 27.729 59.811 27.729 C 58.176 27.729 56.153 27.402 55.03 26.769 L 55.765 24.726 C 56.869 25.155 58.217 25.522 59.484 25.522 C 60.874 25.522 61.855 25.012 61.855 23.99 C 61.855 21.579 55.683 22.743 55.683 18.289 C 55.683 15.694 57.809 14.713 60.363 14.713 C 61.855 14.713 63.224 15.04 64.531 15.673 L 63.837 17.676 C 62.876 17.247 61.65 16.899 60.628 16.899 C 59.464 16.92 58.585 17.308 58.585 18.227 Z M 73.052 14.713 C 77.262 14.713 79.265 17.492 79.265 21.374 C 79.265 21.558 79.224 21.926 79.224 22.11 L 69.742 22.11 C 69.742 24.296 71.356 25.502 73.809 25.502 C 75.382 25.502 76.69 25.073 77.752 24.521 L 78.856 26.381 C 78.202 26.81 76.302 27.811 73.522 27.811 C 68.761 27.811 66.657 24.95 66.657 21.333 C 66.616 17.635 68.823 14.713 73.052 14.713 Z M 69.742 20.128 L 76.322 20.128 C 76.179 18.084 74.892 16.879 73.073 16.879 C 71.193 16.879 69.885 18.125 69.742 20.128 Z" />
+                </svg>
+              </div>
+              <div className="w-px h-6 bg-slate-300 dark:bg-slate-700 hidden sm:block mx-1"></div>
+              <span className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-primary-700 dark:text-primary-400 uppercase bg-primary-100/80 dark:bg-primary-900/40 px-3 py-1 rounded-full">
                 <Server size={14} />
-                <span className="hidden sm:inline">Sovereign Financial Sandbox</span>
+                <span className="hidden sm:inline">eSense TCO Sandbox</span>
                 <span className="sm:hidden">Sandbox</span>
               </span>
-              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+              <span className="hidden md:inline text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800/50 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
                 Ver 2026.1
               </span>
             </div>
@@ -138,12 +162,12 @@ export default function App() {
               <div className="flex bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden text-[10px] md:text-sm font-bold">
                 <button 
                   onClick={() => setCurrency('SAR')} 
-                  className={`px-3 md:px-4 py-1.5 md:py-2 transition-colors ${currency === 'SAR' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+                  className={`px-3 md:px-4 py-1.5 md:py-2 transition-colors ${currency === 'SAR' ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
                   SAR
                 </button>
                 <button 
                   onClick={() => setCurrency('USD')} 
-                  className={`px-3 md:px-4 py-1.5 md:py-2 transition-colors ${currency === 'USD' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+                  className={`px-3 md:px-4 py-1.5 md:py-2 transition-colors ${currency === 'USD' ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
                   USD
                 </button>
               </div>
@@ -159,7 +183,7 @@ export default function App() {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 w-full">
             <div>
               <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mt-1 tracking-tight">
-                On-Premise to Azure KSA Cloud <span className="text-blue-600 dark:text-blue-400">TCO Engine</span>
+                On-Premise to Azure KSA Cloud <span className="text-primary-600 dark:text-primary-400">TCO Engine</span>
               </h1>
               <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
                 Dynamic CFO model tracking structural cost-abatement ledger parameters and payback structures against SDAIA PDPL & NCA governance standards.
@@ -167,13 +191,13 @@ export default function App() {
             </div>
             
             <div className="flex items-center gap-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl shadow-sm w-full lg:w-auto">
-              <div className="h-12 w-12 shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
+              <div className="h-12 w-12 shrink-0 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center">
                 <Calculator size={24} />
               </div>
               <div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Regulatory Target</div>
                 <div className="text-sm text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 mt-0.5">
-                  <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400" />
+                  <ShieldCheck size={16} className="text-primary-600 dark:text-primary-400" />
                   Localized KSA Sovereignty
                 </div>
               </div>
@@ -185,13 +209,18 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column Controls */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="lg:col-span-4 flex flex-col gap-6"
+          >
             
             {/* Input Parameters M3 Card */}
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[24px] p-6 shadow-sm flex flex-col gap-6 relative overflow-hidden transition-colors duration-300">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                  <Settings2 size={20} className="text-blue-600 dark:text-blue-400" />
+                  <Settings2 size={20} className="text-primary-600 dark:text-primary-400" />
                   Business Assumptions
                 </h3>
                 <span className="text-xs font-mono text-slate-400 dark:text-slate-500 font-bold bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg">Blueprint</span>
@@ -228,19 +257,24 @@ export default function App() {
             </div>
 
             {/* Insight Card */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 rounded-[24px] p-6 shadow-sm transition-colors duration-300">
-              <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2 uppercase tracking-tight">
+            <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-900/50 rounded-[24px] p-6 shadow-sm transition-colors duration-300">
+              <h4 className="text-sm font-bold text-primary-800 dark:text-primary-300 flex items-center gap-2 uppercase tracking-tight">
                 <ShieldCheck size={18} />
                 Zero Sovereign Risk Mandate
               </h4>
-              <p className="text-sm text-blue-900/80 dark:text-blue-100/70 mt-3 leading-relaxed">
-                Hosting sensitive national profiles on unauthorized platforms violates <strong className="dark:text-white">SDAIA PDPL</strong>. Repatriating to Local KSA Azure regions eliminates up to <strong className="text-blue-700 dark:text-blue-400">SAR 5,000,000</strong> in potential fines and secures large government tender biddings.
+              <p className="text-sm text-primary-900/80 dark:text-primary-100/70 mt-3 leading-relaxed">
+                Hosting sensitive national profiles on unauthorized platforms violates <strong className="dark:text-white">SDAIA PDPL</strong>. Repatriating to Local KSA Azure regions eliminates up to <strong className="text-primary-700 dark:text-primary-400">SAR 5,000,000</strong> in potential fines and secures large government tender biddings.
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Column Engine */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:col-span-8 flex flex-col gap-6"
+          >
             
             {/* KPI Metrics - Material 3 Style elevated surfaces with primary roles */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -260,15 +294,43 @@ export default function App() {
                 title="Payback Period" 
                 value={`${payback} Months`} 
                 subtitle="Bounded Amortization" 
-                icon={<Info size={14} className="text-blue-500 dark:text-blue-400" />} 
+                icon={<Info size={14} className="text-primary-500 dark:text-primary-400" />} 
               />
+            </div>
+
+            {/* Visualizer Chart */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[24px] p-6 shadow-sm transition-colors duration-300 h-80">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-5 flex items-center gap-2">
+                <TrendingUp size={18} className="text-primary-600 dark:text-primary-400" />
+                3-Year Cumulative Cost Comparison
+              </h3>
+              <div className="h-64 w-full text-xs">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { name: 'On-Premise', value: isUSD ? onPremTco / 3.75 : onPremTco },
+                      { name: 'Azure KSA', value: isUSD ? azureTco / 3.75 : azureTco },
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: isDark ? '#94a3b8' : '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: isDark ? '#94a3b8' : '#64748b' }} tickFormatter={(val) => `${val / 1000}k`} />
+                    <Tooltip 
+                      formatter={(val: number) => [formatMoney(isUSD ? val * 3.75 : val, currency), "TCO"]}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: isDark ? '#0f172a' : '#ffffff', color: isDark ? '#f8fafc' : '#0f172a' }}
+                    />
+                    <Bar dataKey="value" fill={isDark ? "#7b88d2" : "#0A0D36"} radius={[6, 6, 0, 0]} maxBarSize={60} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             {/* Data Table */}
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[24px] overflow-hidden shadow-sm transition-colors duration-300">
               <div className="bg-slate-50 dark:bg-slate-800/80 px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center flex-wrap gap-4">
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                  <TableIcon size={18} className="text-blue-600 dark:text-blue-400" />
+                  <TableIcon size={18} className="text-primary-600 dark:text-primary-400" />
                   3-Year TCO Cost Ledger Matrix
                 </span>
                 <span className="text-[11px] bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-3 py-1.5 rounded-full shadow-sm border border-slate-100 dark:border-slate-600 font-mono font-medium">
@@ -283,7 +345,7 @@ export default function App() {
                       <th className="py-5 px-6">Cost Vector</th>
                       <th className="py-5 px-4 text-right">Legacy On-Premise</th>
                       <th className="py-5 px-4 text-right">Azure KSA Cloud</th>
-                      <th className="py-5 px-6 text-right text-blue-700 dark:text-blue-400">3-Yr Variance</th>
+                      <th className="py-5 px-6 text-right text-primary-700 dark:text-primary-400">3-Yr Variance</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -325,7 +387,7 @@ export default function App() {
                       </td>
                       <td className="py-6 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatMoney(onPremTco, currency)}</td>
                       <td className="py-6 px-4 text-right font-mono text-slate-700 dark:text-slate-300">{formatMoney(azureTco, currency)}</td>
-                      <td className="py-6 px-6 text-right font-mono text-blue-700 dark:text-blue-400 text-lg">{formatMoney(tcoSavings, currency)}</td>
+                      <td className="py-6 px-6 text-right font-mono text-primary-700 dark:text-primary-400 text-lg">{formatMoney(tcoSavings, currency)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -335,7 +397,7 @@ export default function App() {
             {/* Explanation Boxes */}
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[24px] p-6 shadow-sm transition-colors duration-300">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-5 flex items-center gap-2">
-                <GraduationCap size={18} className="text-blue-600 dark:text-blue-400" />
+                <GraduationCap size={18} className="text-primary-600 dark:text-primary-400" />
                 Payback Equation Logic
               </h3>
               
@@ -349,7 +411,7 @@ export default function App() {
             {/* Footer Highlights */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 rounded-[24px] shadow-sm flex items-start gap-4 transition-colors duration-300">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl">
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-2xl">
                   <ShieldCheck size={24} />
                 </div>
                 <div>
@@ -358,7 +420,7 @@ export default function App() {
                 </div>
               </div>
               <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 rounded-[24px] shadow-sm flex items-start gap-4 transition-colors duration-300">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl">
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-2xl">
                   <Cloud size={24} />
                 </div>
                 <div>
@@ -368,9 +430,9 @@ export default function App() {
               </div>
             </div>
 
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -388,7 +450,7 @@ const Slider = ({ label, code, value, min, max, step, onChange, format = (v: num
         </label>
         <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md w-max font-mono font-bold border border-slate-200/50 dark:border-slate-700/50">{code}</span>
       </div>
-      <span className="text-blue-700 dark:text-blue-300 font-bold bg-blue-50/80 dark:bg-blue-900/30 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-800 text-sm">{format(value)}</span>
+      <span className="text-primary-700 dark:text-primary-300 font-bold bg-primary-50/80 dark:bg-primary-900/30 px-3 py-1.5 rounded-xl border border-primary-100 dark:border-primary-800 text-sm">{format(value)}</span>
     </div>
     <div className="relative flex items-center">
       <input
@@ -398,7 +460,7 @@ const Slider = ({ label, code, value, min, max, step, onChange, format = (v: num
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:dark:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:bg-blue-700 hover:[&::-webkit-slider-thumb]:dark:bg-blue-400 [&::-webkit-slider-thumb]:transition-colors"
+        className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:dark:bg-primary-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:bg-primary-700 hover:[&::-webkit-slider-thumb]:dark:bg-primary-400 [&::-webkit-slider-thumb]:transition-colors"
       />
     </div>
   </div>
@@ -423,12 +485,12 @@ const MiniSlider = ({ label, code, value, min, max, step, onChange, format = (v:
 );
 
 const KpiCard = ({ title, value, subtitle, icon, highlight = false }: any) => (
-  <div className={`p-6 rounded-[24px] border ${highlight ? 'bg-blue-600 border-blue-500 text-white' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200'} shadow-sm flex flex-col gap-3 relative overflow-hidden group transition-colors duration-300`}>
-    <div className={`text-xs font-bold uppercase tracking-wider flex justify-between ${highlight ? 'text-blue-200' : 'text-slate-500 dark:text-slate-400'}`}>
+  <div className={`p-6 rounded-[24px] border ${highlight ? 'bg-primary-600 border-primary-500 text-white' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200'} shadow-sm flex flex-col gap-3 relative overflow-hidden group transition-colors duration-300`}>
+    <div className={`text-xs font-bold uppercase tracking-wider flex justify-between ${highlight ? 'text-primary-200' : 'text-slate-500 dark:text-slate-400'}`}>
       <span>{title}</span>
     </div>
     <div className={`text-3xl font-extrabold tracking-tight ${highlight ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{value}</div>
-    <div className={`text-[11px] font-medium flex items-center gap-1.5 ${highlight ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+    <div className={`text-[11px] font-medium flex items-center gap-1.5 ${highlight ? 'text-primary-100' : 'text-slate-500 dark:text-slate-400'}`}>
       {icon}
       <span>{subtitle}</span>
     </div>
@@ -447,14 +509,14 @@ const TableRow = ({ title, onPrem, azure, variance, formulaOnPrem, formulaAzure,
     </td>
     <td className="py-5 px-4 text-right font-mono font-medium text-slate-600 dark:text-slate-400">{formatMoney(onPrem, currency)}</td>
     <td className="py-5 px-4 text-right font-mono font-medium text-slate-600 dark:text-slate-400">{formatMoney(azure, currency)}</td>
-    <td className="py-5 px-6 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{formatMoney(variance, currency)}</td>
+    <td className="py-5 px-6 text-right font-mono font-bold text-primary-600 dark:text-primary-400">{formatMoney(variance, currency)}</td>
   </tr>
 );
 
 const InfoBox = ({ label, title, desc, code }: any) => (
   <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 p-5 rounded-2xl">
     <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-2 flex flex-col items-start gap-2">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/30 px-2 py-0.5 rounded-lg border border-blue-200/50 dark:border-blue-800/30">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-100/50 dark:bg-primary-900/30 px-2 py-0.5 rounded-lg border border-primary-200/50 dark:border-primary-800/30">{label}</span>
       <span className="text-sm">{title}</span>
     </h4>
     <div className="text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 px-2 py-1 rounded w-max mb-2">{code}</div>
