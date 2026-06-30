@@ -85,17 +85,17 @@ export default function App() {
 
   const [b12, setB12] = useUrlState("onPremVmCost", 16000);
   const [b13, setB13] = useUrlState("onPremStorageCost", 3500);
-  const [b14, setB14] = useUrlState("azureVmCost", 13500);
-  const [b15, setB15] = useUrlState("azureStorageCost", 3100);
+  const [b14, setB14] = useUrlState("azureVmCost", 13800);
+  const [b15, setB15] = useUrlState("azureStorageCost", 3240);
 
   const [egressCost, setEgressCost] = useUrlState("egress", 10000);
   const [complianceCost, setComplianceCost] = useUrlState("compliance", 50000);
   const [euVmCost, setEuVmCost] = useUrlState("euVmCost", 11500);
   const [euStorageCost, setEuStorageCost] = useUrlState("euStorageCost", 2700);
-  const [ksaVmCost, setKsaVmCost] = useUrlState("ksaVmCost", 13500);
+  const [ksaVmCost, setKsaVmCost] = useUrlState("ksaVmCost", 13800);
   const [ksaStorageCost, setKsaStorageCost] = useUrlState(
     "ksaStorageCost",
-    3100,
+    3240,
   );
 
   const [migratorMode, setMigratorMode] = useUrlStateString("mode", "onprem");
@@ -285,9 +285,11 @@ export default function App() {
                     </span>
                   </h1>
                   <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-                    Dynamic CFO model tracking structural cost-abatement ledger
-                    parameters and payback structures against SDAIA PDPL & NCA
-                    governance standards.
+                    Hosting sensitive national personal data on unauthorized
+                    platforms constitutes a violation of SDAIA’s Personal Data
+                    Protection Law (PDPL). Migrating data to local Azure regions
+                    within the Kingdom of Saudi Arabia avoids potential fines
+                    and secures major government contracts.
                   </p>
                 </>
               ) : (
@@ -299,9 +301,11 @@ export default function App() {
                     </span>
                   </h1>
                   <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-                    Model the business value of repatriating workloads from
-                    Azure Europe (legacy) to Azure Saudi Arabia (sovereign
-                    local) in real-time.
+                    Hosting sensitive national personal data on unauthorized
+                    platforms constitutes a violation of SDAIA’s Personal Data
+                    Protection Law (PDPL). Migrating data to local Azure regions
+                    within the Kingdom of Saudi Arabia avoids potential fines
+                    and secures major government contracts.
                   </p>
                 </>
               )}
@@ -572,15 +576,11 @@ export default function App() {
                   Zero Sovereign Risk Mandate
                 </h4>
                 <p className="text-sm text-primary-900/80 dark:text-primary-100/70 mt-3 leading-relaxed">
-                  Hosting sensitive national profiles on unauthorized platforms
-                  violates{" "}
-                  <strong className="dark:text-white">SDAIA PDPL</strong>.
-                  Repatriating to Local KSA Azure regions eliminates up to{" "}
-                  <strong className="text-primary-700 dark:text-primary-400">
-                    SAR 5,000,000
-                  </strong>{" "}
-                  in potential fines and secures large government tender
-                  biddings.
+                  Hosting sensitive national personal data on unauthorized
+                  platforms constitutes a violation of SDAIA’s Personal Data
+                  Protection Law (PDPL). Migrating data to local Azure regions
+                  within the Kingdom of Saudi Arabia avoids potential fines and
+                  secures major government contracts.
                 </p>
               </div>
             )}
