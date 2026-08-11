@@ -1,0 +1,137 @@
+name: 🔄 Sync GitHub → Azure DevOps
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Triggers
+#   • Every push to any branch or tag  →  reflects immediately in ADO
+#   • Branch / tag creation & deletion  →  keeps ADO refs in sync
+#   • Manual dispatch  →  force a full re-mirror on demand
+# ──────────────────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  create:
+  delete:
+  workflow_dispatch:
+    inputs:
+      force_mirror:
+        description: 'Force a full --mirror push (overwrites diverged refs in ADO)'
+        required: false
+        default: 'true'
+        type: boolean
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Prevent redundant concurrent runs.
+# A new push cancels any in-progress mirror for the same ref.
+# ──────────────────────────────────────────────────────────────────────────────
+concurrency:
+  group: sync-to-ado-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mirror:
+    name: Mirror to Azure DevOps
+    # ── Self-hosted runner ────────────────────────────────────────────────────
+    # Label "mirror" must match the label you gave the runner during config.
+    # Adjust the labels array if your runner has a different label.
+    runs-on: [self-hosted, Linux, X64, mirror]
+
+    steps:
+      # ── 1. Full bare checkout ───────────────────────────────────────────────
+      # fetch-depth: 0  →  entire history + all branches & tags
+      - name: Checkout (full history)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # ── 2. Detach HEAD ──────────────────────────────────────────────────────
+      # On a persistent self-hosted runner the current branch (e.g. main) is
+      # checked out, so git refuses to fetch into refs/heads/main.
+      # Detaching HEAD releases that lock before we mirror all refs.
+      - name: Detach HEAD
+        run: git checkout --detach HEAD
+
+      # ── 3. Fetch every remote ref so --mirror has the complete picture ──────
+      - name: Fetch all refs
+        run: |
+          git fetch --prune --prune-tags --force origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'
+
+      # ── 4. Push mirror to ADO ───────────────────────────────────────────────
+      # Required repo variables  (Settings → Secrets and variables → Actions):
+      #
+      #   VARIABLES  (plain text):
+      #     ADO_REPO_URI    Full TFS/ADO repo URL, e.g.:
+      #                     https://tfs.example.com/Collection/Project/_git/Repo
+      #
+      #   SECRETS  (encrypted):
+      #     ADO_PAT         Personal Access Token created in TFS (User Settings →
+      #                     Personal Access Tokens) with Full Access or Code R/W.
+      #
+      # NOTE: On-prem TFS does NOT support "x-token-auth" (that is Azure DevOps
+      #       Services only). We use an Authorization: Basic header with the PAT
+      #       base64-encoded. This avoids URL-encoding issues when the PAT
+      #       contains special characters (+, /, =, etc.).
+      #
+      - name: Push mirror to Azure DevOps
+        env:
+          ADO_PAT:      ${{ secrets.ADO_PAT }}
+          ADO_REPO_URI: ${{ vars.ADO_REPO_URI }}
+        run: |
+          set -euo pipefail
+
+          echo "::notice::Syncing to → ${ADO_REPO_URI}"
+
+          # ── Build Basic-auth header ─────────────────────────────────────────
+          # Format: base64(":<PAT>")  — empty username, PAT as password.
+          # Using printf avoids a trailing newline that would corrupt the token.
+          B64_PAT=$(printf ":%s" "${ADO_PAT}" | base64 -w 0)
+          AUTH_HEADER="Authorization: Basic ${B64_PAT}"
+
+          # ── Register clean remote (no credentials in the URL) ───────────────
+          if git remote | grep -q '^ado$'; then
+            git remote set-url ado "${ADO_REPO_URI}"
+          else
+            git remote add ado "${ADO_REPO_URI}"
+          fi
+
+          # ── Disable SSL verify for on-prem servers with internal CA certs ───
+          git config http.sslVerify false
+
+          # ── Connectivity pre-check ──────────────────────────────────────────
+          TFS_HOST=$(echo "${ADO_REPO_URI}" | sed 's|https://||' | cut -d'/' -f1)
+          echo "::group::Connectivity check → ${TFS_HOST}"
+          HTTP_STATUS=$(curl -sk --max-time 15 -o /dev/null \
+                        -w "%{http_code}" "https://${TFS_HOST}") || true
+          echo "TFS host HTTP status: ${HTTP_STATUS}"
+          echo "::endgroup::"
+
+          if [[ "${HTTP_STATUS}" == "000" ]]; then
+            echo "::error::Cannot reach ${TFS_HOST} — check network/firewall from runner"
+            exit 1
+          fi
+
+          # ── Push all refs (branches + tags + deletions) via header auth ─────
+          echo "::notice::Pushing all refs…"
+          if ! git -c "http.extraHeader=${AUTH_HEADER}" \
+                   push ado --mirror --force 2>&1; then
+            echo "::error::❌ Push to ADO failed. Checklist:"
+            echo "::error::  1. ADO_PAT was created in TFS (User Settings → Personal Access Tokens)"
+            echo "::error::     NOT in GitHub or Azure DevOps Services — on-prem PATs are separate"
+            echo "::error::  2. PAT scope: Full Access  OR  Code (Read & Write)"
+            echo "::error::  3. PAT is not expired"
+            echo "::error::  4. Repository exists in TFS and was created EMPTY (no initial commit)"
+            echo "::error::  5. ADO_REPO_URI is correct: ${ADO_REPO_URI}"
+            exit 1
+          fi
+
+          echo "::notice::✅ Mirror complete"
+
+      # ── 5. Clean up the authenticated remote URL from the local config ──────
+      # The workspace is on a persistent self-hosted runner, so remove the
+      # secret-bearing URL from .git/config after every run.
+      - name: Remove ADO remote (cleanup)
+        if: always()
+        run: |
+          git remote remove ado 2>/dev/null || true
